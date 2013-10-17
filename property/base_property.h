@@ -26,7 +26,7 @@ namespace is_mesh
 
     virtual base_property* clone() const = 0;
 
-  private:
+  protected:
     std::string name_;
   };
 }

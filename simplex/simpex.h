@@ -1,7 +1,7 @@
 #ifndef IS_SIMPLEX_H
 #define IS_SIMPLEX_H
 
-#include "common/common.h"
+#include "../common/common.h"
 #include "simplex_handle.h"
 
 namespace is_mesh

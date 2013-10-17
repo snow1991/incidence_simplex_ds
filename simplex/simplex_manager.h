@@ -13,6 +13,8 @@ namespace is_mesh
 
     simplex_manager(size_t top_dim = 0) {mesh_simplices_.resize(top_dim + 1);}
 
+    void set_dim(size_t top_dim) {mesh_simplices_.resize(top_dim + 1);}
+
     size_t max_dim() const
     {
       return mesh_simplices_.size();
@@ -44,6 +46,12 @@ namespace is_mesh
     {
       assert(dim >= 0 && dim < mesh_simplices_.size());
       mesh_simplices_[dim].push_back(sh);
+    }
+
+    void push_back(const simplex_dim& dim)
+    {
+      assert(dim >= 0 && dim < mesh_simplices_.size());
+      mesh_simplices_[dim].push_back(simplex());
     }
 
     size_t n_element(const simplex_dim& dim) const

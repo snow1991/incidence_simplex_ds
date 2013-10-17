@@ -14,7 +14,18 @@ namespace is_mesh
     DELETED = 2,
 
     /// if the simplex is boundary, the second lowwest bit is 1, otherwise is 0
-    BOUND = 4
+    BOUND = 4,
+
+    /// this is used in the getting boundary
+    BOUND_VISITED = 8,
+
+    /// this is used in the getting co_boundary
+    CO_BOUND_VISITED = 16,
+
+    /// this is used in the getting adjacent
+    ADJACENT_VISITED = 32,
+
+    AUX_FLG = 64
   };
 
   /// status class
@@ -88,7 +99,50 @@ namespace is_mesh
     /// This member function is used to mark the current simplex is not boundary
     inline void reset_boundary()
     {reset_flag(BOUND);}
-  protected:
+
+    /// This member function checks if the current simplex is bound_visited
+    /** \return true if the current simplex is visited, otherwise false
+      */
+    inline bool is_bound_visited() const
+    {return is_set_flag(BOUND_VISITED);}
+
+    /// This member function is used to mark the current simplex to be bound_visited
+    inline void set_bound_visited()
+    {set_flag(BOUND_VISITED);}
+
+    /// This member function is used to mark the current simplex to be not bound_visited
+    inline void reset_bound_visited()
+    {reset_flag(BOUND_VISITED);}
+
+    /// This member function checks if the current simplex is co_bound_visited
+    /** \return true if the current simplex is visited, otherwise false
+      */
+    inline bool is_co_bound_visited() const
+    {return is_set_flag(CO_BOUND_VISITED);}
+
+    /// This member function is used to mark the current simplex to be co_bound_visited
+    inline void set_co_bound_visited()
+    {set_flag(CO_BOUND_VISITED);}
+
+    /// This member function is used to mark the current simplex to be not co_bound_visited
+    inline void reset_co_bound_visited()
+    {reset_flag(CO_BOUND_VISITED);}
+
+    /// This member function checks if the current simplex is adjacent_visited
+    /** \return true if the current simplex is visited, otherwise false
+      */
+    inline bool is_adjacent_visited() const
+    {return is_set_flag(ADJACENT_VISITED);}
+
+    /// This member function is used to mark the current simplex to be adjacent_visited
+    inline void set_adjacent_visited()
+    {set_flag(ADJACENT_VISITED);}
+
+    /// This member function is used to mark the current simplex to be not adjacent_visited
+    inline void reset_adjacent_visited()
+    {reset_flag(ADJACENT_VISITED);}
+
+  public:
 
     /// This member function checks if the current simplex is marked as the given flag
     /** \param flag the given flag

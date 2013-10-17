@@ -67,9 +67,14 @@ namespace is_mesh
       * \param rhs the simplex handle to be compared with the current one
       * \return true if the  two simplex handles are equal, otherwise, false
       */
-    bool operator== (const simplex_handle& rhs)
+    bool operator== (const simplex_handle& rhs) const
     {
       return (id_ == rhs.id_) && (dim_ == rhs.dim_);
+    }
+
+    bool operator!= (const simplex_handle& rhs) const
+    {
+      return !(*this == rhs);
     }
 
     /// This operator compares two simplex handles
@@ -78,11 +83,21 @@ namespace is_mesh
       * \param rhs the simplex handle to be compared with the current one
       * \return true if the first handle is less than the second one, othserwise, false.
       */
-    bool operator< (const simplex_handle& rhs)
+    bool operator< (const simplex_handle& rhs) const
     {
       if(dim_ == rhs.dim_)
         return id_ < rhs.id_;
       return dim_ < rhs.dim_;
+    }
+
+    /// This function returns whether the simplex handle is null
+    /** A simplex handle is not null of and only if the id and dim is not -1;
+      * \param rhs the simplex handle to be judeged
+      * \ return true if and only if the simplex handle is not null
+      */
+    bool is_null() const
+    {
+      return (dim_ == -1 || id_ == -1);
     }
 
   protected:
