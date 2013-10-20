@@ -256,17 +256,11 @@ namespace is_mesh
       }
     assert(other_verts.size() == adj_top.size());
 
-//    std::cout << "del simplex: " << std::endl;
     for(size_t i = 0; i < del_simplex.size(); ++i)
       {
         assert(!cur_mesh_.is_simplex_deleted(del_simplex[i]));
         cur_mesh_.set_simplex_deleted(del_simplex[i]);
-//        std::cout << "(" << del_simplex[i].dim() << ", "
-//                  << del_simplex[i].id() << ")  ";
       }
-//    std::cout << std::endl;
-
-//    cur_mesh_.del_simplex(sh);
     return 0;
   }
 
@@ -312,13 +306,6 @@ namespace is_mesh
             new_cells(j, i) = t;
           }
       }
-//    std::cout << "new_cells: " << std::endl;
-//    for(size_t i = 0; i < new_cells.size(2); ++i)
-//      {
-//        for(size_t j = 0; j < new_cells.size(1); ++j)
-//          std::cout << new_cells[3*i +j] << " ";
-//        std::cout << std::endl;
-//      }
     bool flg = detect_topology(new_cells);
     return flg;
   }
@@ -357,12 +344,6 @@ namespace is_mesh
     if(simplex2handle[sh.dim()].find(others) !=
        simplex2handle[sh.dim()].end())
       return false;
-//    std::vector<simplex_handle> adj_verts;
-//    cur_mesh_.get_adjacent_simplex(simplex_handle(0, others[0]), adj_verts);
-//    for(size_t j = 0; j < adj_verts.size(); ++j)
-//      if(adj_verts[j].id() == others[1])
-//        return false;
-
     return true;
   }
 }

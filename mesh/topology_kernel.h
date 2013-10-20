@@ -49,21 +49,6 @@ namespace is_mesh
       return top_dim_;
     }
 
-    bool is_boundary_simplex(const simplex_handle& sh) const
-    {
-      return pm_.get_element_property<simplex_status>(sh, status_id_).is_boundary();
-    }
-
-    void set_simplex_boundary(const simplex_handle& sh)
-    {
-      pm_.get_element_property<simplex_status>(sh, status_id_).set_boundary();
-    }
-
-    void reset_simplex_boundary(const simplex_handle& sh)
-    {
-      pm_.get_element_property<simplex_status>(sh, status_id_).reset_boundary();
-    }
-
     bool is_simplex_visited(const simplex_handle& sh) const
     {
       return pm_.get_element_property<simplex_status>(sh, status_id_).is_visited();

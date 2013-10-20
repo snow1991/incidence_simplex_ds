@@ -9,6 +9,7 @@ namespace is_mesh
   class simplex_manager
   {
   public:
+
     typedef std::vector<simplex_with_same_dim_type> mesh_simplices_type;
 
     simplex_manager(size_t top_dim = 0) {mesh_simplices_.resize(top_dim + 1);}
