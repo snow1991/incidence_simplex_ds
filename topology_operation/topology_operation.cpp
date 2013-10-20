@@ -41,6 +41,7 @@ namespace is_mesh
         cur_mesh_.get_simplex_manager().get_specific_simplex(sh).get_boundary();
     cur_mesh_.set_coord(edge_verts[1], coord);
 
+    // deal with some case
     const std::vector<simplex_handle> edge_tops =
         cur_mesh_.get_simplex_manager().get_specific_simplex(sh).get_par_co_boundary();
     std::vector<simplex_handle> del_edges;
@@ -48,19 +49,41 @@ namespace is_mesh
       {
         const std::vector<simplex_handle>& bou =
             cur_mesh_.get_simplex_manager().get_specific_simplex(edge_tops[i]).get_boundary();
+        std::vector<simplex_handle> other_edges;
+        std::vector<bool> is_delete;
         for(size_t j = 0; j < bou.size(); ++j)
-          {
-            const std::vector<simplex_handle>& verts =
-                cur_mesh_.get_simplex_manager().get_specific_simplex(bou[j]).get_boundary();
-            if(verts[0] != edge_verts[0] && verts[1] != edge_verts[0])
-              {
-                const std::vector<simplex_handle>& par =
-                    cur_mesh_.get_simplex_manager().get_specific_simplex(bou[j]).get_par_co_boundary();
-                if(par.size() == 1)
-                  del_edges.push_back(bou[j]);
-                break;
-              }
-          }
+          if(bou[j] != sh)
+            {
+              other_edges.push_back(bou[j]);
+              const std::vector<simplex_handle>& par =
+                  cur_mesh_.get_simplex_manager().get_specific_simplex(bou[j]).get_par_co_boundary();
+              assert(par.size() > 0 && par.size() < 3);
+              if(par.size() == 2)
+                is_delete.push_back(false);
+              else
+                is_delete.push_back(true);
+            }
+        assert(other_edges.size() == 2);
+        if(is_delete[0] || is_delete[1])
+          for(size_t j = 0; j < other_edges.size(); ++j)
+            {
+              const std::vector<simplex_handle>& vert =
+                  cur_mesh_.get_simplex_manager().get_specific_simplex(other_edges[j]).get_boundary();
+              if(vert[0] != edge_verts[0] && vert[1] != edge_verts[0])
+                {
+                  for(size_t k = 0; k < vert.size(); ++k)
+                    {
+                      if(vert[k] == edge_verts[1])
+                        continue;
+                      std::vector<simplex_handle>& par =
+                          cur_mesh_.get_simplex_manager().get_specific_simplex(vert[k]).get_par_co_boundary();
+                      assert(par.size() == 1);
+                      par[0] = other_edges[j];
+                    }
+                  if(is_delete[0] && is_delete[1])
+                    del_edges.push_back(other_edges[j]);
+                }
+            }
       }
 
 
@@ -233,11 +256,16 @@ namespace is_mesh
       }
     assert(other_verts.size() == adj_top.size());
 
+//    std::cout << "del simplex: " << std::endl;
     for(size_t i = 0; i < del_simplex.size(); ++i)
       {
         assert(!cur_mesh_.is_simplex_deleted(del_simplex[i]));
         cur_mesh_.set_simplex_deleted(del_simplex[i]);
+//        std::cout << "(" << del_simplex[i].dim() << ", "
+//                  << del_simplex[i].id() << ")  ";
       }
+//    std::cout << std::endl;
+
 //    cur_mesh_.del_simplex(sh);
     return 0;
   }
@@ -284,6 +312,13 @@ namespace is_mesh
             new_cells(j, i) = t;
           }
       }
+//    std::cout << "new_cells: " << std::endl;
+//    for(size_t i = 0; i < new_cells.size(2); ++i)
+//      {
+//        for(size_t j = 0; j < new_cells.size(1); ++j)
+//          std::cout << new_cells[3*i +j] << " ";
+//        std::cout << std::endl;
+//      }
     bool flg = detect_topology(new_cells);
     return flg;
   }
