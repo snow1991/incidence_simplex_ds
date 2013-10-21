@@ -111,7 +111,7 @@ namespace is_mesh
     return 0;
   }
 
-  int topology_operation::flip_edge(const simplex_handle& sh, std::vector<simplex_handle>& new_edge)
+  int topology_operation::flip_edge(const simplex_handle& sh)
   {
     if(!is_edge_flip_ok(sh))
       {

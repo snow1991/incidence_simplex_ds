@@ -5,35 +5,67 @@
 
 namespace is_mesh
 {
+  /**
+    * This class is the properties of the simplex with same dimension, for example, the vertex has color property,
+    * coordinate property and so on.
+    */
   class simplex_property
   {
   public:
+    /// an alias used to define the properties of the simplex with same dimension
     typedef std::vector<base_property*> dim_property_type;
 
+    /// This function creats a new instace of the class
     simplex_property() {}
 
+    /// copy construct function
     simplex_property(const simplex_property& rhs);
 
+    /// assignment construct function
     simplex_property& operator= (const simplex_property& rhs);
 
+    /// This member function destroys an instance of class
     virtual ~simplex_property();
 
+    /** This function return the properties of the simplex with same dimension, it is a const version
+      * \return the properties of the simplex with same dimension
+      */
     const dim_property_type& get_dim_property() const
     {return dim_property_;}
 
+    /** This function return the properties of the simplex with same dimension, it is a const version
+      * \return the properties of the simplex with same dimension
+      */
     dim_property_type& get_dim_property()
     {return dim_property_;}
 
+    /** This function resizes the properties of the simplex with same dimension
+      * \param n the size we want to resize
+      */
     void resize(size_t n);
 
+    /** This function reserves the properties of the simplex with same dimension
+      * \param n the size we want to reserve
+      */
     void reserve(size_t n);
 
+    /// This function clear all the properties of the simplex with same dimension
     void clear();
 
+    /** This function swap the property which were given by index
+      * \param id0 the index of one property
+      * \param id1 the index of another property
+      */
     void swap(size_t id0, size_t id1);
 
+    /** This function returns the size of property, in other words, the number of properties
+      * \return the size of property
+      */
     size_t size() const {return dim_property_.size();}
 
+    /** This function returns the element of the simplex, in other words, it returns the number of element of each property
+      * \return the elemet of the simplex
+      */
     size_t n_elements() const
     {
       size_t elements = 0;
@@ -46,15 +78,29 @@ namespace is_mesh
       return elements;
     }
 
+    /** This function returns the index of the given property, the property was decided by its' name
+      * \return the index of the given property in the vector
+      */
     template<class T>
     int get_specific_prop_index(const T&, const std::string& prop_name) const;
 
+    /** This function returns the given property by its' index, it is a const version
+      * \param prop_id the given index of the property
+      * \return the property
+      */
     template<class T>
     const property<T>& get_specific_prop(size_t prop_id) const;
 
+    /** This function returns the given property by its' index
+      * \param prop_id the given index of the property
+      * \return the property
+      */
     template<class T>
     property<T>& get_specific_prop(size_t prop_id);
 
+    /** This function push a default property value into the given property by index
+      * \param prop_id the index of the property
+      */
     template <class T>
     void push_back(size_t prop_id)
     {
@@ -63,9 +109,16 @@ namespace is_mesh
       props.push_back();
     }
 
+    /** This function add a property of the simplex of the same dimension
+      * \param prop the default value of the type T
+      * \param prop_name the name of the added property, dafault value is "<unknown>"
+      */
     template<class T>
     void add_property(const T& prop, const std::string& prop_name="<unknown>");
 
+    /** This function remove the property given by its' index
+      * \param the index of the peoperty
+      */
     void remove_property(size_t id);
 
   protected:

@@ -5,16 +5,37 @@
 
 namespace is_mesh
 {
+  /**
+    * This class includes some basic topology operations of the mesh.
+    */
   class topology_operation
   {
   public:
+    /** This function creates a instance of this class
+      * \param rhs the mesh need topology operations
+      */
     topology_operation(mesh& rhs): cur_mesh_(rhs) {}
 
+    /** This function insert a vertex on the given simplex
+      * \param sh the handle of given simplex
+      * \param corrd the coordinate of the inserted vertex
+      * \return 0 if the operation success otherwise non-zero
+      */
     int insert_vertex(const simplex_handle& sh, const matrixd& coord);
 
+    /** This function collapse an edge to a vertex
+      * \param sh the handle of given edge
+      * \param corrd the coordinate of the new vertex
+      * \return 0 if the operation success otherwise non-zero
+      */
     int collapse_edge(const simplex_handle& sh, const matrixd& coord);
 
-    int flip_edge(const simplex_handle& sh, std::vector<simplex_handle>& new_edge);
+
+    /** This function flip an edge in the triangel mesh
+      * \param sh the handle of given edge
+      * \return 0 if the operation success otherwise non-zero
+      */
+    int flip_edge(const simplex_handle& sh);
 
   protected:
 
