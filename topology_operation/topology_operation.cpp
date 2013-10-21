@@ -126,9 +126,6 @@ namespace is_mesh
     simplex_handle new_top_sh;
     new_top[0] = other_verts[0][0];
     new_top[1] = other_verts[1][0];
-    new_edge.clear();
-    new_edge.push_back(new_top[0]);
-    new_edge.push_back(new_top[1]);
 
     for(size_t i = 0; i < vert_shs.size(); ++i)
       {

@@ -7,7 +7,9 @@
 #include <jtflib/mesh/mesh.h>
 namespace is_mesh
 {
-
+  /**
+    * The functions and classes in this file are used to detect topology.
+    */
   class face2tet_adjacent
   {
   public:

@@ -91,6 +91,16 @@ namespace is_mesh
       return sh;
     }
 
+    /** This function return the size of the simplex with the same dimension, be careful, the simplex
+      * which was deleted is also included in the sum of size.
+      * \param dim the simplex dimension of the simplex
+      * \return the size of the simplex with the same dimension dim
+      */
+    size_t n_elements(const simplex_dim& dim) const
+    {
+      return sm_.n_element(dim);
+    }
+
     /** This function return length of the given edge
       * \param sh the handle of given edge
       * \return the length of the egde
