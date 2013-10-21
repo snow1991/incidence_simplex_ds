@@ -93,7 +93,7 @@ namespace is_mesh
     /// This function returns whether the simplex handle is null
     /** A simplex handle is not null of and only if the id and dim is not -1;
       * \param rhs the simplex handle to be judeged
-      * \ return true if and only if the simplex handle is not null
+      * \return true if and only if the simplex handle is not null
       */
     bool is_null() const
     {
