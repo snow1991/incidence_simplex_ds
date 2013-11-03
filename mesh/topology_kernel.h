@@ -236,6 +236,15 @@ namespace is_mesh
     int get_other_verts(const simplex_handle& sh, const std::vector<simplex_handle>& given_verts,
                         std::vector<simplex_handle>& other_verts);
 
+    /** This function get the boundary of a given simplex which is opposite the given vertex, for example,
+      *  we get a edge opposite to a given vertex in a given triangle mesh.
+      * \param v_sh the handle of given vertex
+      * \param sh the handle of given simplex
+      * \param oppo_sh the handle we wanf get
+      */
+    int get_vertex_opposite_simplex(const simplex_handle& v_sh, const simplex_handle& sh,
+                                    simplex_handle& oppo_sh);
+
     /// This function remove the deleted simplex, be careful when using it, it will change the handle
     /// of the simplex.
     int garbage_collector();

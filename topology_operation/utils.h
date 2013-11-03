@@ -53,11 +53,23 @@ namespace is_mesh
   int get_outside_face(const face2tet_adjacent &m,
                        zjucad::matrix::matrix<size_t> &face);
 
+  int dfs_face2tet(const size_t index, std::vector<bool> &is_visited,
+                   const matrixst &tet,
+                   const face2tet_adjacent &face_adj);
+
   int dfs_outside_face(const size_t index, std::vector<bool> &is_visited,
                        const matrixst &face,
                        const jtf::mesh::edge2cell_adjacent &edge_adj);
 
   bool detect_topology(const matrixst& cells);
+
+  /** get the euler number of the mesh
+    */
+  int get_euler_num(const face2tet_adjacent &face_adj);
+
+  /** get the euler number of the mesh
+    */
+  int get_euler_num(const zjucad::matrix::matrix<size_t> &tet);
 
 }
 

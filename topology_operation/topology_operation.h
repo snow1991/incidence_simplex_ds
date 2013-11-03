@@ -37,6 +37,8 @@ namespace is_mesh
       */
     int flip_edge(const simplex_handle& sh);
 
+    void debug_print_edge_adj_cells(const simplex_handle& sh);
+
   protected:
 
     int del_top_simplex(const simplex_handle& sh,
@@ -54,6 +56,16 @@ namespace is_mesh
     int insert_edge_in_tet(const simplex_handle& v_sh,
                            const std::vector<simplex_handle>& vert_shs,
                            const std::vector<std::vector<simplex_handle> >& other_verts);
+
+    int deal_collapse_edge_case_tri_mesh(const simplex_handle& sh,
+                                         const std::vector<simplex_handle>& edge_verts,
+                                         std::vector<simplex_handle>& del_simplexes);
+
+    int deal_collapse_edge_case_tet_mesh(const simplex_handle& sh,
+                                         const std::vector<simplex_handle>& edge_verts,
+                                         std::vector<simplex_handle>& del_simplexes);
+
+    int update_simplex_info(const simplex_handle& sh);
 
     bool is_edge_collapse_ok(const simplex_handle& sh);
 

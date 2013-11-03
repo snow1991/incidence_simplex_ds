@@ -1,5 +1,7 @@
 #include "utils.h"
 
+#include <stack>
+
 namespace is_mesh
 {
 
@@ -100,6 +102,8 @@ namespace is_mesh
     for(size_t i = 0; i < face_num; ++i, ++itr) {
       faces_[i] = itr->first;
       face2tet_[i] = itr->second;
+      // add by shenxinxin
+      face2idx_.insert(std::make_pair(faces_[i], i));
     }
     return 0;
   }
@@ -126,30 +130,66 @@ namespace is_mesh
     return 0;
   }
 
+  int dfs_face2tet(const size_t index, std::vector<bool> &is_visited,
+                   const matrixst &tet,
+                   const face2tet_adjacent &face_adj)
+  {
+    size_t tet_idx, face_idx;
+    std::stack<size_t> st;
+    assert(!is_visited[index]);
+    st.push(index);
+    while(!st.empty())
+      {
+        const size_t cur = st.top();
+        st.pop();
+        is_visited[cur] = true;
+        for(size_t i = 0; i < tet.size(1); ++i)
+          for(size_t j = i + 1; j < tet.size(1); ++j)
+            for(size_t k = j + 1; k < tet.size(1); ++k)
+              {
+                face_idx = face_adj.get_face_idx(tet(i, cur), tet(j, cur),
+                                                 tet(k, cur));
+                const std::pair<size_t, size_t>& face2tet =
+                    face_adj.face2tet_[face_idx];
+                assert(face2tet.first == cur || face2tet.second == cur);
+                if(face2tet.first == -1 || face2tet.second == -1)
+                  continue;
+                tet_idx = (face2tet.first == cur) ? face2tet.second :
+                                                    face2tet.first;
+                if(!is_visited[tet_idx])
+                  st.push(tet_idx);
+              }
+      }
+  }
+
   int dfs_outside_face(const size_t index, std::vector<bool> &is_visited,
                        const matrixst &face,
                        const jtf::mesh::edge2cell_adjacent &edge_adj)
   {
     size_t face_index, edge_index;
-    std::vector<size_t> edge2tri;
-    if(!is_visited[index])
-    {
-      is_visited[index] = true;
-      for(size_t i = 0; i < 3; ++i)
-        for(size_t j = i+1; j < 3; ++j)
-        {
-          edge_index = edge_adj.get_edge_idx(face(i, index), face(j, index));
-          edge2tri.clear();
-          edge2tri.push_back(edge_adj.edge2cell_[edge_index].first);
-          edge2tri.push_back(edge_adj.edge2cell_[edge_index].second);
-          if(edge2tri.size() != 2)
-            continue;
-          if(edge2tri[0] == -1 || edge2tri[1] == -1)
-            continue;
-          face_index = edge2tri[0] + edge2tri[1] - index;
-          dfs_outside_face(face_index, is_visited, face, edge_adj);
-        }
-    }
+    std::stack<size_t> st;
+    assert(!is_visited[index]);
+    st.push(index);
+    while(!st.empty())
+      {
+        const size_t cur = st.top();
+        st.pop();
+        is_visited[cur] = true;
+        for(size_t i = 0; i < face.size(1); ++i)
+          for(size_t j = i+1; j < face.size(1); ++j)
+            {
+              edge_index = edge_adj.get_edge_idx(face(i, cur), face(j, cur));
+              const std::pair<size_t, size_t>& edge2tri =
+                  edge_adj.edge2cell_[edge_index];
+              assert(edge2tri.first == cur || edge2tri.second == cur);
+              if(edge2tri.first == -1 || edge2tri.second == -1)
+                continue;
+              face_index = (edge2tri.first == cur) ? edge2tri.second :
+                                                     edge2tri.first;
+              if(!is_visited[face_index])
+                st.push(face_index);
+            }
+      }
     return 0;
   }
 
@@ -169,8 +209,17 @@ namespace is_mesh
         std::auto_ptr<face2tet_adjacent> face_adj(face2tet_adjacent::create(cells));
         if(!face_adj.get())
           return false;
+
+        int eular_num = get_euler_num(*face_adj);
+        if(eular_num != 1)
+          {
+            std:: cout << "[info] eular num is " << eular_num << std::endl;
+            return false;
+          }
+
         get_outside_face(*face_adj, face);
       }
+
     std::auto_ptr<edge2cell_adjacent> edge_adj(edge2cell_adjacent::create(face, false));
     if(!edge_adj.get())
       return false;
@@ -179,9 +228,74 @@ namespace is_mesh
     for(size_t i = 0; i < is_visited.size(); ++i)
       if(!is_visited[i])
       {
-        std::cout << "exist a hole" << std::endl;
+        std::cout << "the face exists a hole" << std::endl;
         return false;
       }
     return true;
   }
+
+  int get_euler_num(const face2tet_adjacent &face_adj)
+  {
+    std::set<std::pair<size_t, size_t> > edges;
+    std::set<size_t> verts;
+    const size_t face_num = face_adj.faces_.size();
+    const size_t tet_num = face_adj.tet_num_;
+    for(size_t i = 0; i < face_num; ++i)
+      {
+        const std::vector<size_t> &face = face_adj.faces_[i];
+        for(size_t j = 0; j < face.size(); ++j)
+          {
+            verts.insert(face[j]);
+            for(size_t k = j + 1; k < face.size(); ++k)
+              {
+                edges.insert(std::make_pair(face[j], face[k]));
+              }
+          }
+      }
+    return verts.size() + face_num - edges.size() - tet_num;
+  }
+
+  int get_euler_num(const zjucad::matrix::matrix<size_t> &tet)
+  {
+    std::set<std::vector<size_t> > tet_set;
+    std::set<std::vector<size_t> > face_set;
+    std::set<std::pair<size_t, size_t> > edge_set;
+    std::set<size_t> vert_set;
+    for(size_t i = 0; i < tet.size(2); ++i)
+      {
+        std::vector<size_t> tet_vec(4);
+        for(size_t j = 0; j < tet.size(1); ++j)
+          {
+            tet_vec[j] = tet(j, i);
+            vert_set.insert(tet(j, i));
+          }
+        std::sort(tet_vec.begin(), tet_vec.end());
+        tet_set.insert(tet_vec);
+
+        for(size_t j = 0; j < tet_vec.size(); ++j)
+          for(size_t k = j + 1; k < tet_vec.size(); ++k)
+            {
+              std::pair<size_t, size_t> edge(std::make_pair(tet_vec[j], tet_vec[k]));
+              edge_set.insert(edge);
+              for(size_t l = k + 1; l < tet_vec.size(); ++l)
+                {
+                  std::vector<size_t> face_vec(3);
+                  face_vec[0] = tet_vec[j];
+                  face_vec[1] = tet_vec[k];
+                  face_vec[2] = tet_vec[l];
+                  face_set.insert(face_vec);
+                }
+            }
+      }
+    if(tet_set.size() != tet.size(2))
+      {
+        std::cout << "input tet size: " << tet.size(2)
+                  << " ****** tet set size: " << tet_set.size() << std::endl;
+        return -1;
+      }
+
+    return (vert_set.size() + face_set.size() - edge_set.size() - tet_set.size());
+  }
 }
+
+

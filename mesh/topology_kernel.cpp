@@ -33,6 +33,8 @@ namespace is_mesh
     std::vector<size_t> sorted_verts(verts);
     std::sort(sorted_verts.begin(), sorted_verts.end());
     assert(sorted_verts.back() < sm_.n_element(0));
+    for(size_t i = 0; i < sorted_verts.size() - 1; ++i)
+      assert(sorted_verts[i] != sorted_verts[i + 1]);
 
 //    std::cout << "new top simplex: ";
 //    for(size_t i = 0; i < sorted_verts.size(); ++i)
@@ -229,6 +231,7 @@ namespace is_mesh
     while(!q.empty())
       {
         simplex_handle cur_sh = q.front();
+        assert(!is_simplex_deleted(cur_sh));
         q.pop();
         if(cur_sh.dim() > sh.dim())
           {
@@ -239,6 +242,7 @@ namespace is_mesh
             sm_.get_specific_simplex(cur_sh).get_par_co_boundary();
         for(size_t i = 0; i < cur_par_co_bound.size(); ++i)
           {
+            assert(!is_simplex_deleted(cur_par_co_bound[i]));
             if(!is_simplex_co_bound_visited(cur_par_co_bound[i]))
               {
                 q.push(cur_par_co_bound[i]);
@@ -252,6 +256,7 @@ namespace is_mesh
                 sm_.get_specific_simplex(cur_sh).get_boundary();
             for(size_t i = 0; i < cur_simplex_bound.size(); ++i)
               {
+                assert(!is_simplex_deleted(cur_simplex_bound[i]));
                 if(!is_simplex_co_bound_visited(cur_simplex_bound[i]) &&
                    is_belong(sh, cur_simplex_bound[i]))
                   {
@@ -414,6 +419,32 @@ namespace is_mesh
       {
         assert(pm_.get_element_property<simplex_status>(given_verts[i], status_id_).is_set_flag(AUX_FLG));
         pm_.get_element_property<simplex_status>(given_verts[i], status_id_).reset_flag(AUX_FLG);
+      }
+    return 0;
+  }
+
+  int topology_kernel::get_vertex_opposite_simplex(const simplex_handle& v_sh, const simplex_handle& sh,
+                                                   simplex_handle& oppo_sh)
+  {
+    assert(sh.dim() >= 2);
+    oppo_sh = simplex_handle();
+    const std::vector<simplex_handle>& bounds = sm_.get_specific_simplex(sh).get_boundary();
+    for(size_t i = 0; i < bounds.size(); ++i)
+      {
+        bool flg = true;
+        std::vector<simplex_handle> verts;
+        get_k_boundary_simplex(bounds[i], 0, verts);
+        for(size_t j = 0; j < verts.size(); ++j)
+          if(verts[j] == v_sh)
+            {
+              flg = false;
+              break;
+            }
+        if(flg)
+          {
+            oppo_sh = bounds[i];
+            break;
+          }
       }
     return 0;
   }
@@ -610,6 +641,12 @@ namespace is_mesh
       {
         sh = it->second;
         is_new = false;
+        if(is_simplex_deleted(sh))
+        {
+          reset_simplex_deleted(sh);
+          std::cout << "reset deleted simplex (" << sh.dim()
+                    << ", " << sh.id() << ")" << std::endl;
+        }
       }
     return 0;
   }

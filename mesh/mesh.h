@@ -76,7 +76,7 @@ namespace is_mesh
       return sm_.get_specific_simplex(sh);
     }
 
-    /** This function return the handle of the given vertexs
+    /** This function return the handle of the given vertexs, the vertex is soreted
       * \param verts the given vertexs
       * \return the handle of given vertexs
       */
