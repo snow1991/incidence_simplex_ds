@@ -8,6 +8,7 @@
 #include <cassert>
 #include <algorithm>
 #include <time.h>
+#include <set>
 #include <zjucad/matrix/matrix.h>
 
 namespace is_mesh

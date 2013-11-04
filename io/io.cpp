@@ -24,7 +24,7 @@ namespace is_mesh
       return 0;
     }
 
-    int write_mesh(matrixd& node, matrixst& top_simplex, const mesh_type &mesh)
+    int write_mesh(matrixd& node, matrixst& top_simplex, const mesh_type &mesh, bool is_remove)
     {
       const simplex_manager& sm = mesh.get_simplex_manager();
       simplex_handle cur_sh;
@@ -61,6 +61,30 @@ namespace is_mesh
               ++cnt;
             }
         }
+      if(is_remove)
+        remove_extra_nodes(top_simplex, node);
+      return 0;
+    }
+
+    int remove_extra_nodes(matrixst &cells, matrixd &node)
+    {
+      assert(cells.size(1) == 4 || cells.size() == 3);
+      assert(*std::max_element(cells.begin(), cells.end()) < node.size(2));
+
+      std::set<size_t> used_node_idx(cells.begin(), cells.end());
+      matrixst used_node_mat(used_node_idx.size(), 1);
+      std::copy(used_node_idx.begin(), used_node_idx.end(), used_node_mat.begin());
+
+      std::map<size_t,size_t> p2p;
+
+      matrixd new_node(3, used_node_mat.size());
+      for(size_t pi = 0; pi < used_node_mat.size(); ++pi){
+        new_node(colon(),pi) = node(colon(), used_node_mat[pi]);
+        p2p[used_node_mat[pi]] = pi;
+      }
+      for(size_t pi = 0; pi < cells.size(); ++pi)
+        cells[pi] = p2p[cells[pi]];
+      node = new_node;
       return 0;
     }
 

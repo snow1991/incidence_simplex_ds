@@ -26,8 +26,9 @@ namespace is_mesh
       * \param node the coordinate of the nodes, it is a 3*N matrix, N is the number of nodes
       * \param top_simplex the top simplex of the mesh, it is a 3*M(triangle) mesh or 4*M(tet mesh) matrix, M is the number of top simplex
       * \param mesh the mesh which we want to write out
+      * \param is_remove if true, remove the extra nodes of the mesh, else not
       */
-    int write_mesh(matrixd& node, matrixst& top_simplex, const mesh_type& mesh);
+    int write_mesh(matrixd& node, matrixst& top_simplex, const mesh_type& mesh, bool is_remove = true);
 
     /// This function read a tet mesh from file
     /** This function read a tet mesh from file and write the nodes and top simplex into matrix
@@ -54,6 +55,13 @@ namespace is_mesh
         matrixd *node = 0,
         matrixst *tet = 0,
         matrixst *tri = 0);
+
+    /// This function remove the nodes which was not used
+    /** \param cells the input cells
+      * \param node the input nodes
+      * \return
+      */
+    int remove_extra_nodes(matrixst &cells, matrixd &node);
 
     template <typename T>
     int read_matrix(std::istream &is, zjucad::matrix::matrix<T> &m)
