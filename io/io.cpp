@@ -68,7 +68,7 @@ namespace is_mesh
 
     int remove_extra_nodes(matrixst &cells, matrixd &node)
     {
-      assert(cells.size(1) == 4 || cells.size() == 3);
+      assert(cells.size(1) == 4 || cells.size(1) == 3);
       assert(*std::max_element(cells.begin(), cells.end()) < node.size(2));
 
       std::set<size_t> used_node_idx(cells.begin(), cells.end());

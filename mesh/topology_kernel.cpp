@@ -36,10 +36,10 @@ namespace is_mesh
     for(size_t i = 0; i < sorted_verts.size() - 1; ++i)
       assert(sorted_verts[i] != sorted_verts[i + 1]);
 
-//    std::cout << "new top simplex: ";
-//    for(size_t i = 0; i < sorted_verts.size(); ++i)
-//        std::cout << sorted_verts[i] << "  ";
-//    std::cout << std::endl;
+    //    std::cout << "new top simplex: ";
+    //    for(size_t i = 0; i < sorted_verts.size(); ++i)
+    //        std::cout << sorted_verts[i] << "  ";
+    //    std::cout << std::endl;
 
     if(sorted_verts.size() == 4)
       return new_tet(sorted_verts, sh);
@@ -285,7 +285,7 @@ namespace is_mesh
     bool is_vertex = (sh.dim() == 0);
     std::queue<simplex_handle> q;
     std::vector<simplex_handle> visited_simplex;
-    #if 0
+#if 0
     if(is_vertex)
       {
         std::vector<simplex_handle> co_bounds;
@@ -324,7 +324,7 @@ namespace is_mesh
               }
           }
       }
-    #else
+#else
     if(is_vertex)
       {
         q.push(sh);
@@ -391,7 +391,7 @@ namespace is_mesh
               }
           }
       }
-    #endif
+#endif
     for(size_t i = 0; i < visited_simplex.size(); ++i)
       reset_simplex_adjacent_visited(visited_simplex[i]);
   }
@@ -452,9 +452,34 @@ namespace is_mesh
   int topology_kernel::garbage_collector()
   {
     simplex_handle cur_left_sh, cur_right_sh;
+
+    // delete simplex in simplex2handle
     for(size_t dim = 1; dim <= top_dim_; ++dim)
       {
         const size_t cur_dim = dim;
+        map_type& cur_map = simplex2handle_[cur_dim];
+        for(map_type::iterator it = cur_map.begin(); it != cur_map.end();)
+          {
+            if(is_simplex_deleted(it->second))
+              it = cur_map.erase(it);
+            else
+              ++it;
+          }
+      }
+    // correspond simplex handle
+    std::vector<std::vector<simplex_handle> > corr_shs(top_dim_ + 1);
+    for(size_t dim = 1; dim <= top_dim_; ++dim)
+      {
+        const size_t cur_dim = dim;
+
+        // initialized correspond simplex handle of current dimension
+        corr_shs[cur_dim].resize(sm_.n_element(cur_dim));
+        for(size_t i = 0; i < sm_.n_element(cur_dim); ++i)
+          {
+            corr_shs[cur_dim][i].set_dim(cur_dim);
+            corr_shs[cur_dim][i].set_id(i);
+          }
+        // swap the element
         size_t left = 0;
         size_t right = sm_.n_element(cur_dim) - 1;
         cur_left_sh.set_dim(cur_dim);
@@ -477,9 +502,56 @@ namespace is_mesh
               break;
             sm_.swap(cur_dim, left, right);
             pm_.swap(cur_dim, left, right);
+            std::swap(corr_shs[cur_dim][left], corr_shs[cur_dim][right]);
           }
         sm_.resize(cur_dim, is_simplex_deleted(cur_left_sh) ? left : left + 1);
         pm_.resize(cur_dim, is_simplex_deleted(cur_left_sh) ? left : left + 1);
+      }
+
+    // update the adjacent info
+    for(size_t dim = 0; dim < top_dim_ + 1; ++dim)
+      {
+        const size_t cur_dim = dim;
+        const size_t ele_num = sm_.n_element(cur_dim);
+        simplex_handle cur_sh;
+        cur_sh.set_dim(cur_dim);
+        for(size_t i = 0; i < ele_num; ++i)
+          {
+            // update boundary info
+            cur_sh.set_id(i);
+            if(cur_dim > 1)
+              {
+                std::vector<simplex_handle>& bou =
+                    sm_.get_specific_simplex(cur_sh).get_boundary();
+                for(size_t j = 0; j < bou.size(); ++j)
+                  {
+                    size_t id = bou[j].id();
+                    bou[j] =corr_shs[cur_dim - 1][id];
+                  }
+              }
+            // update coboundary info
+            if(cur_dim < top_dim_)
+              {
+                std::vector<simplex_handle>& co_bou =
+                    sm_.get_specific_simplex(cur_sh).get_par_co_boundary();
+                for(size_t j = 0; j < co_bou.size(); ++j)
+                  {
+                    size_t id = co_bou[j].id();
+                    co_bou[j] = corr_shs[cur_dim + 1][id];
+                  }
+              }
+          }
+      }
+    //update the simplex2handle
+    for(size_t dim = 1; dim <= top_dim_; ++dim)
+      {
+        const size_t cur_dim = dim;
+        map_type& cur_map = simplex2handle_[cur_dim];
+        for(map_type::iterator it = cur_map.begin(); it != cur_map.end(); ++it)
+          {
+            size_t id = (it->second).id();
+            it->second = corr_shs[cur_dim][id];
+          }
       }
     return 0;
   }
@@ -642,11 +714,11 @@ namespace is_mesh
         sh = it->second;
         is_new = false;
         if(is_simplex_deleted(sh))
-        {
-          reset_simplex_deleted(sh);
-          std::cout << "reset deleted simplex (" << sh.dim()
-                    << ", " << sh.id() << ")" << std::endl;
-        }
+          {
+            reset_simplex_deleted(sh);
+            std::cout << "reset deleted simplex (" << sh.dim()
+                      << ", " << sh.id() << ")" << std::endl;
+          }
       }
     return 0;
   }
